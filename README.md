@@ -10,5 +10,5 @@ activate
 
 install
 ```
-(fa2tv) > pip install pillow pillow-heif moviepy
+(fa2tv) > pip install pillow pillow-heif moviepy pyqt5
 ```
