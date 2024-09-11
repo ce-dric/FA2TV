@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QFileDialog, QLabel, QProgressBar, QWidget, QMessageBox, QScrollArea
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-import os
+from PyQt5.QtGui import QIcon
 from convert import convert_files
 
 class ConverterThread(QThread):
@@ -26,6 +26,8 @@ class ConverterApp(QMainWindow):
     def initUI(self):
         self.setWindowTitle('HEIC to JPG & MOV to MP4 Converter')
         self.setGeometry(100, 100, 400, 400)
+
+        app.setWindowIcon(QIcon('icon.png'))
 
         layout = QVBoxLayout()
 
