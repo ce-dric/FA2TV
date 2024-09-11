@@ -26,7 +26,7 @@ def convert_files(input_folder, output_folder, progress_callback, log_callback):
                 elif filename.lower().endswith(".mov"):
                     convert_video(input_file_path, output_dir, filename, log_callback)
             except Exception as e:
-                log_callback(f"Error converting {filename}: {str(e)}", "failed")
+                log_callback(f"{filename} failed", "failed")
 
             processed_files += 1
             progress_callback(int((processed_files / total_files) * 100))
@@ -45,15 +45,15 @@ def convert_image(input_path, output_dir, filename, log_callback):
             heif_file.stride,
         )
         image.save(output_path, format="JPEG")
-        log_callback(f"Image {filename} converted to {output_path}.", "success")
+        log_callback(f"{filename} converted", "success")
     
     except ValueError as e:
-        log_callback(f"Error using pillow-heif for {filename}: {str(e)}. Trying ffmpeg.", "failed")
+        log_callback(f"{filename} failed with pillow-heif, trying ffmpeg.", "failed")
         try:
             ffmpeg.input(input_path).output(output_path).run()
-            log_callback(f"Image {filename} converted to {output_path} using ffmpeg.", "success")
+            log_callback(f"{filename} converted with ffmpeg", "success")
         except ffmpeg.Error as e:
-            log_callback(f"ffmpeg failed to convert {filename}: {e.stderr}", "failed")
+            log_callback(f"{filename} failed with ffmpeg", "failed")
             raise ValueError(f"Both pillow-heif and ffmpeg failed to convert {filename}")
 
 def convert_video(input_path, output_dir, filename, log_callback):
@@ -62,7 +62,7 @@ def convert_video(input_path, output_dir, filename, log_callback):
     try:
         video = VideoFileClip(input_path)
         video.write_videofile(output_path, codec="libx264")
-        log_callback(f"Video {filename} converted to {output_path}.", "success")
+        log_callback(f"{filename} converted", "success")
     except Exception as e:
-        log_callback(f"Error converting video {filename}: {str(e)}", "failed")
+        log_callback(f"{filename} failed", "failed")
         raise ValueError(f"Failed to convert {filename}: {str(e)}")
