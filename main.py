@@ -6,7 +6,7 @@ from convert import convert_files
 
 class ConverterThread(QThread):
     progress = pyqtSignal(int)
-    log = pyqtSignal(str, str)  # 로그에 메시지와 상태(success/failed)를 전달
+    log = pyqtSignal(str, str)
 
     def __init__(self, input_folder, output_folder):
         super().__init__()
@@ -57,11 +57,13 @@ class ConverterApp(QMainWindow):
 
         self.logs = QLabel("")
         self.logs.setWordWrap(True)
-        self.logs.setFixedHeight(150)
+        self.logs.setAlignment(Qt.AlignTop)
+        self.logs.setTextInteractionFlags(Qt.TextSelectableByMouse)
         
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.logs)
+        self.scroll_area.setFixedHeight(150)
         layout.addWidget(self.scroll_area)
 
         container = QWidget()
@@ -106,11 +108,15 @@ class ConverterApp(QMainWindow):
             colored_message = f'<span style="color:green;">[success]</span> {message}'
         elif status == "failed":
             colored_message = f'<span style="color:red;">[failed]</span> {message}'
+        elif status == "skipped":
+            colored_message = f'<span style="color:purple;">[skipped]</span> {message}'
         else:
             colored_message = message
 
         current_text = self.logs.text()
         self.logs.setText(current_text + "<br>" + colored_message)
+        self.logs.adjustSize()
+
         self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum())
 
 if __name__ == '__main__':
