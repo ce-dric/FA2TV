@@ -7,6 +7,7 @@ from convert import convert_files
 class ConverterThread(QThread):
     progress = pyqtSignal(int)
     log = pyqtSignal(str, str)
+    finished = pyqtSignal(list)
 
     def __init__(self, input_folder, output_folder):
         super().__init__()
@@ -14,7 +15,7 @@ class ConverterThread(QThread):
         self.output_folder = output_folder
 
     def run(self):
-        convert_files(self.input_folder, self.output_folder, self.progress.emit, self.log.emit)
+        convert_files(self.input_folder, self.output_folder, self.progress.emit, self.log.emit, self.finished.emit)
 
 class ConverterApp(QMainWindow):
     def __init__(self):
@@ -98,6 +99,7 @@ class ConverterApp(QMainWindow):
             self.thread = ConverterThread(self.input_folder, self.output_folder)
             self.thread.progress.connect(self.update_progress)
             self.thread.log.connect(self.update_logs)
+            self.thread.finished.connect(self.conversion_finished)
             self.thread.start()
 
     def update_progress(self, value):
@@ -118,6 +120,17 @@ class ConverterApp(QMainWindow):
         self.logs.adjustSize()
 
         self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum())
+    
+    def conversion_finished(self, failed_files):
+        QMessageBox.information(self, "Conversion Finished", "The conversion has been completed.")
+
+        if failed_files:
+            failure_report = "\n".join(failed_files)
+            QMessageBox.warning(self, "Failed Files", f"The following files failed to convert:\n\n{failure_report}")
+
+            with open("failed_files.txt", "w") as f:
+                f.write("Failed Files:\n")
+                f.write(failure_report)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

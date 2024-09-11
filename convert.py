@@ -4,7 +4,8 @@ import pillow_heif
 import ffmpeg
 from moviepy.editor import VideoFileClip
 
-def convert_files(input_folder, output_folder, progress_callback, log_callback):
+def convert_files(input_folder, output_folder, progress_callback, log_callback, finish_callback):
+    failed_files = []
     total_files = sum([len(files) for _, _, files in os.walk(input_folder)])
     processed_files = 0
 
@@ -13,10 +14,12 @@ def convert_files(input_folder, output_folder, progress_callback, log_callback):
         output_dir = os.path.join(output_folder, rel_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        
+
         for filename in files:
             if filename.startswith('._'):
-                log_callback(f"Skipping hidden metadata file: {filename}", "skipped")
+                log_callback(f"Skipping {filename}", "skipped")
+                processed_files += 1
+                progress_callback(int((processed_files / total_files) * 100))
                 continue
 
             input_file_path = os.path.join(root, filename)
@@ -26,10 +29,13 @@ def convert_files(input_folder, output_folder, progress_callback, log_callback):
                 elif filename.lower().endswith(".mov"):
                     convert_video(input_file_path, output_dir, filename, log_callback)
             except Exception as e:
+                failed_files.append(f"{filename}: {str(e)}")
                 log_callback(f"{filename} failed", "failed")
 
             processed_files += 1
             progress_callback(int((processed_files / total_files) * 100))
+
+    finish_callback(failed_files)
 
 def convert_image(input_path, output_dir, filename, log_callback):
     output_path = os.path.join(output_dir, os.path.splitext(filename)[0] + '.jpg')
